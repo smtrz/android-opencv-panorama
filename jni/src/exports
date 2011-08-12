@@ -1,0 +1,7 @@
+export PATH=$PATH:/usr/local/google/home/jonwilson/android-sdk-linux_x86/platform-tools
+export PATH=$PATH:/usr/local/google/home/jonwilson/android-sdk-linux_x86/tools
+export PATH=$PATH:/usr/local/google/home/jonwilson/android-ndk/
+export OPENCV_PACKAGE_DIR=/usr/local/google/home/jonwilson/OpenCV-2.3.1
+export OpenCV_DIR=/usr/local/google/home/jonwilson/OpenCV-2.3.1/release
+export ANDROID_NDK=/usr/local/google/home/jonwilson/android-ndk
+export JAVA_HOME=/usr/lib/jvm/java-6-sun/jre/

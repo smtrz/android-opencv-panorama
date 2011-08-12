@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.google.code.panoforandroid;
+package net.pandorica;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -24,7 +24,6 @@ import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Window;
 import android.view.WindowManager;
 
@@ -33,7 +32,6 @@ import android.view.WindowManager;
  * Saves photo jpeg callback data to sdcard
  */
 public class PanoCamera extends Activity {
-    private static final String TAG                   = "PanoCamera";
     public static final String  EXTRA_DIR_PATH        = "dirPath";
     public static final String  EXTRA_FILE_NAME       = "name";
 
@@ -46,7 +44,6 @@ public class PanoCamera extends Activity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.i(TAG, "onCreate");
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
@@ -81,15 +78,13 @@ public class PanoCamera extends Activity {
                 if (photo.exists()) {
                     photo.delete();
                 }
-                Log.i(TAG, "File Output " + photo.getAbsolutePath());
 
                 try {
-                    FileOutputStream fos = new FileOutputStream(photo.getPath());
+                    FileOutputStream fos = new FileOutputStream(photo.getAbsolutePath());
                     fos.write(data[i]);
                     fos.close();
 
                 } catch (java.io.IOException e) {
-                    Log.e(TAG, "unable to save image photo to sd card:" + e.getMessage());
                     return Activity.RESULT_FIRST_USER;
                 }
             }

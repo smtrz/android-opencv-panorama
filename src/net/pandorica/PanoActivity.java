@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.google.code.panoforandroid;
+package net.pandorica;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
@@ -27,6 +27,8 @@ import org.opencv.core.Mat;
 import org.opencv.core.Size;
 import org.opencv.highgui.Highgui;
 import org.opencv.imgproc.Imgproc;
+
+import net.pandorica.R;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -46,7 +48,6 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -67,7 +68,6 @@ import android.widget.ViewSwitcher.ViewFactory;
 
 public class PanoActivity extends Activity implements ViewFactory, OnClickListener {
     public static final String SETTINGS                = "Pano_Settings";
-    private static final String TAG                    = "PanoForAndroid";
 
     // persistent settings key's
     private final String SETTINGS_SAVE_PATH            = "path";
@@ -161,6 +161,15 @@ public class PanoActivity extends Activity implements ViewFactory, OnClickListen
     }
 
     /**
+     * 
+     */
+    @Override
+    public void onResume() {
+        super.onResume();
+        refreshView();
+    }
+
+    /**
      * Initializes all the settings
      */
     private boolean loadSettings(String arg) {
@@ -203,7 +212,6 @@ public class PanoActivity extends Activity implements ViewFactory, OnClickListen
      * @return Intent
      */
     private Intent createCaptureIntent() {
-        Log.d(TAG, "New Intent Current Image: " + mCurrentImage);
         if (mSubDir == null) createNewPano(false);
         Intent intent = new Intent(
                 MediaStore.ACTION_IMAGE_CAPTURE,
@@ -256,7 +264,6 @@ public class PanoActivity extends Activity implements ViewFactory, OnClickListen
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == PanoCamera.INTENT_TAKE_PICTURE) {
             if (resultCode == RESULT_OK) {
-                Log.d(TAG, "Result Ok Current Image: " + mCurrentImage);
                 showDialog(DIALOG_RESULTS);
             }
         } else if (requestCode == PicasaUploadActivity.INTENT_UPLOAD_IMAGE) {
@@ -292,7 +299,6 @@ public class PanoActivity extends Activity implements ViewFactory, OnClickListen
             dialog = tip;
             break;
         case DIALOG_RESULTS:
-            Log.d(TAG, "Dialog Current Image: " + mCurrentImage);
             Dialog progress = new Dialog(this);
             progress.setContentView(R.layout.result);
             progress.setTitle(R.string.dialog_results_title);
@@ -340,13 +346,11 @@ public class PanoActivity extends Activity implements ViewFactory, OnClickListen
     protected void onPrepareDialog(int id, Dialog dialog) {
         switch (id) {
         case DIALOG_RESULTS:
-            mPanoAdapter.notifyDataSetChanged();
+            refreshView();
 
             Mat mIntermediate = new Mat();
             Mat mYuv = new Mat();
 
-            Log.d(TAG, "opening [" + mDirPath +mSubDir+
-                    mImagePrefix + mCurrentImage + mType + "]");
             mIntermediate = Highgui.imread(mDirPath +mSubDir+
                     mImagePrefix + mCurrentImage + mType);
 
@@ -401,12 +405,10 @@ public class PanoActivity extends Activity implements ViewFactory, OnClickListen
                 }
             });
 
-            Log.d(TAG, "completed");
-
             break;
         case DIALOG_SUCCESS:
             final File img = new File(mDirPath + mSubDir + mOutputImage);
-            Bitmap result = BitmapFactory.decodeFile(img.getPath());
+            Bitmap result = BitmapFactory.decodeFile(img.getAbsolutePath());
 
             ImageView png = (ImageView) dialog.findViewById(R.id.image);
             png.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
@@ -414,7 +416,7 @@ public class PanoActivity extends Activity implements ViewFactory, OnClickListen
             png.setPadding(3, 3, 3, 3);
             png.setImageBitmap(result);
 
-            mPanoAdapter.notifyDataSetChanged();
+            refreshView();
 
             Button share = (Button) dialog.findViewById(R.id.share);
             share.setOnClickListener(new OnClickListener() {
@@ -602,7 +604,7 @@ public class PanoActivity extends Activity implements ViewFactory, OnClickListen
             else {
                 File f = getDirImage(position-1);
                 if (f != null) {
-                    result = BitmapFactory.decodeFile(f.getPath(), options);
+                    result = BitmapFactory.decodeFile(f.getAbsolutePath(), options);
                 }
             }
             panos.setImageBitmap(result);
@@ -635,10 +637,18 @@ public class PanoActivity extends Activity implements ViewFactory, OnClickListen
                 if (f != null) {
                     mSubDir = f.getParentFile().getName() + "/";
                     mImageSwitcher.setImageDrawable(new BitmapDrawable(
-                            BitmapFactory.decodeFile(getDirImage(position-1).getPath(), options)));
+                            BitmapFactory.decodeFile(getDirImage(position-1).getAbsolutePath(), options)));
                 }
             }
         }
+    }
+    
+    /**
+     * Refreshes the Gallery View
+     */
+    private void refreshView() {
+        updateFolders();
+        mPanoAdapter.notifyDataSetChanged();
     }
 
     /**
@@ -725,7 +735,6 @@ public class PanoActivity extends Activity implements ViewFactory, OnClickListen
     public void onClick(View v) {
         switch (v.getId()) {
         case R.id.main_button_upload:
-            Log.d(TAG, "Image: " + mGalleryImage);
             uploadImage(getDirImage(mGalleryImage-1));
             break;
         case R.id.main_button_share:
@@ -743,7 +752,7 @@ public class PanoActivity extends Activity implements ViewFactory, OnClickListen
      */
     private void uploadImage(File f) {
         Intent upload = new Intent(this, PicasaUploadActivity.class);
-        upload.putExtra(PicasaUploadActivity.EXTRA_FILE, f.getPath());
+        upload.putExtra(PicasaUploadActivity.EXTRA_FILE, f.getAbsolutePath());
         startActivityForResult(upload, PicasaUploadActivity.INTENT_UPLOAD_IMAGE);
     }
 

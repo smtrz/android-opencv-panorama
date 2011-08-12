@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.google.code.panoforandroid;
+package net.pandorica;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -35,6 +35,7 @@ import com.google.api.client.http.InputStreamContent;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.http.xml.atom.AtomParser;
 import com.google.api.client.xml.XmlNamespaceDictionary;
+import net.pandorica.R;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
@@ -52,7 +53,6 @@ import android.content.pm.ActivityInfo;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.util.Log;
 
 /**
  * Manages google.com authToken and uploads images to their Picasa Drop Box
@@ -144,7 +144,6 @@ public class PicasaUploadActivity extends Activity {
                                     SharedPreferences.Editor editor = mSettings.edit();
                                     editor.remove(PREF_AUTH_TOKEN);
                                     editor.commit();
-                                    Log.d(TAG, "got a 403");
                                     return false;
                                 }
                                 return false;
@@ -299,7 +298,7 @@ public class PicasaUploadActivity extends Activity {
 
                     File file = new File(files[i]);
 
-                    Uri uri = Uri.parse("file:/" + file.getPath());
+                    Uri uri = Uri.parse("file:/" + file.getAbsolutePath());
                     InputStreamContent content = new InputStreamContent();
                     ContentResolver contentResolver = getContentResolver();
 
@@ -313,7 +312,6 @@ public class PicasaUploadActivity extends Activity {
                             content);
                     ((GoogleHeaders) request.headers).setSlugFromFileName(files[i]);
 
-                    Log.d(TAG, "saving to picasa");
                     request.enableGZipContent = true;
                     request.execute().ignore();
 
@@ -333,7 +331,6 @@ public class PicasaUploadActivity extends Activity {
          * and returns to the calling Activity.
          */
         protected void onPostExecute(Integer result) {
-            Log.d(TAG, "Result: " + result);
             switch (result) {
                 case Activity.RESULT_OK:
                     setResult(Activity.RESULT_OK, new Intent());

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.google.code.panoforandroid;
+package net.pandorica;
 
 import java.io.IOException;
 import java.util.List;
@@ -24,7 +24,6 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.hardware.Camera;
 import android.hardware.Camera.PreviewCallback;
-import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
@@ -35,8 +34,6 @@ import android.view.View.OnClickListener;
  * Listens for on screen clicks and takes pictures.
  */
 public abstract class PanoSurfaceBase extends SurfaceView implements SurfaceHolder.Callback, Runnable, OnClickListener {
-    private static final String TAG = "PanoSurfaceBase";
-
     private Camera              mCamera;
     private SurfaceHolder       mHolder;
     private int                 mFrameWidth;
@@ -70,7 +67,6 @@ public abstract class PanoSurfaceBase extends SurfaceView implements SurfaceHold
      * Callback for when this surface is changed. Updates preview size starts previewing.
      */
     public void surfaceChanged(SurfaceHolder _holder, int format, int width, int height) {
-        Log.i(TAG, "surfaceChanged");
         if (mCamera != null) {
             Camera.Parameters params = mCamera.getParameters();
             List<Camera.Size> sizes = params.getSupportedPreviewSizes();
@@ -98,7 +94,6 @@ public abstract class PanoSurfaceBase extends SurfaceView implements SurfaceHold
      * Prepares surface and camera for previewing
      */
     public void surfaceCreated(SurfaceHolder holder) {
-        Log.i(TAG, "surfaceCreated");
         this.setOnClickListener(this);
         mCapturing = false;
         mCamera = Camera.open();
@@ -117,7 +112,6 @@ public abstract class PanoSurfaceBase extends SurfaceView implements SurfaceHold
      * Cleanup surface and camera
      */
     public void surfaceDestroyed(SurfaceHolder holder) {
-        Log.i(TAG, "surfaceDestroyed");
         mThreadRun = false;
         if (mCamera != null) {
             synchronized (this) {
@@ -136,7 +130,6 @@ public abstract class PanoSurfaceBase extends SurfaceView implements SurfaceHold
      */
     public void run() {
         mThreadRun = true;
-        Log.i(TAG, "Starting processing thread");
         while (mThreadRun) {
             Bitmap bmp = null;
 
@@ -166,7 +159,6 @@ public abstract class PanoSurfaceBase extends SurfaceView implements SurfaceHold
     Camera.PictureCallback jpegCallback = new Camera.PictureCallback() {
 
         public void onPictureTaken(byte[] data, Camera camera) {
-            Log.d(TAG, "JPG Callback");
             mPanoClass.new SavePhotoTask().execute(data);
         }
     };
@@ -177,7 +169,6 @@ public abstract class PanoSurfaceBase extends SurfaceView implements SurfaceHold
      * Then take the picture.
      */
     public void onClick(View v) {
-        Log.d(TAG, "On Screen Click");
         if ((mCamera != null) && (!mCapturing)) {
             mCapturing = true;
             mCamera.stopPreview();

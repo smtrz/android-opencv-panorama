@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.google.code.panoforandroid;
+package net.pandorica;
 
 import org.opencv.android;
 import org.opencv.core.Mat;

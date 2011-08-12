@@ -309,7 +309,7 @@ int gc_args_ret(int size, char **mem, int retval) {
 }
 
 extern "C" {
-JNIEXPORT jint JNICALL Java_com_google_code_panoforandroid_PanoActivity_Stitch(JNIEnv *env, jobject obj, jobjectArray args)
+JNIEXPORT jint JNICALL Java_net_pandorica_PanoActivity_Stitch(JNIEnv *env, jobject obj, jobjectArray args)
 {
     int argc = env->GetArrayLength(args);
     char **argv = new char*[argc];

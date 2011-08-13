@@ -12,7 +12,7 @@ using namespace std;
 using namespace cv;
 
 extern "C" {
-JNIEXPORT void JNICALL Java_net_pandorica_PanoSurfaceView_FindFeatures(JNIEnv* env, jobject thiz, jlong addrGray, jlong addrRgba, jlong addrComp)
+JNIEXPORT void JNICALL Java_net_pandorica_opencv_pano_PanoSurfaceView_FindFeatures(JNIEnv* env, jobject thiz, jlong addrGray, jlong addrRgba, jlong addrComp)
 {
     Mat* pMatGr=(Mat*)addrGray;
     Mat* pMatRgb=(Mat*)addrRgba;

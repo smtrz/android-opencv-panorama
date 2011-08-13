@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package net.pandorica;
+package net.pandorica.opencv.pano;
 
 import java.io.File;
 import java.io.FileOutputStream;

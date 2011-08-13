@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package net.pandorica;
+package net.pandorica.opencv.pano;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
@@ -27,8 +27,6 @@ import org.opencv.core.Mat;
 import org.opencv.core.Size;
 import org.opencv.highgui.Highgui;
 import org.opencv.imgproc.Imgproc;
-
-import net.pandorica.R;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -656,6 +654,7 @@ public class PanoActivity extends Activity implements ViewFactory, OnClickListen
      */
     private void updateFolders() {
         File storage = new File(mDirPath);
+        if (!storage.exists()) storage.mkdirs();
         File[] contents = storage.listFiles();
         mDirectories = new ArrayList<File>();
 

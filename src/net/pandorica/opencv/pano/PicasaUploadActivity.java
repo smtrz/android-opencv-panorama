@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package net.pandorica;
+package net.pandorica.opencv.pano;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -35,7 +35,6 @@ import com.google.api.client.http.InputStreamContent;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.http.xml.atom.AtomParser;
 import com.google.api.client.xml.XmlNamespaceDictionary;
-import net.pandorica.R;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;

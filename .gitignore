@@ -1,8 +1,8 @@
-bin/
-gen/
-libs/
-obj/
-build.xml
-local.properties
-proguard.cfg
+android/pano/bin/
+android/pano/gen/
+android/pano/libs/
+android/pano/obj/
+android/pano/build.xml
+android/pano/local.properties
+android/pano/proguard.cfg
 *.swp

@@ -1,11 +1,13 @@
 /* 
-  Pantilt head
+  Pantilt head firmware
+  author: rom@google.com (rom clement)
   
   The pantilt head is a head with 2 degrees of freedom (yaw and pitch) whose 
   primary purpose is to enable a user to capture a panorama using a phone. 
   The phone is communicating to the pantilt head via bluetooth.
   
-  author: rom@google.com (rom clement)
+  This firmware is designed to work on an Arduino board.
+  This firmware was only tested on an Arduino Mega2560
   
  */
  
@@ -88,7 +90,7 @@ void loop() {
       MoveServo(servo_yaw, value);
       break;
       
-    case COMMAND_PITCH:  //Mover servo of pitch axis
+    case COMMAND_PITCH:  //Move servo of pitch axis
       value = atoi(buf_listener+1);
       if (DEBUG_STATUS == 1) {
         Serial.print("\nMoving pitch servo by [degrees]: ");

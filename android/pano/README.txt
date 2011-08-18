@@ -26,8 +26,9 @@ rm libs/armeabi-v7a/libnative_camera_r2.*
 # If you want to use Eclipse please follow this guide
 # http://opencv.willowgarage.com/wiki/AndroidPrebuiltOpenCV231
 
-# Download and link external JAR's via
+# Download the Google API's for Java client 
 # http://code.google.com/p/google-api-java-client/downloads/list
+# Place these .jar files into the libs/ folder
 # guava
 # google-api-client
 # google-api-client-extensions

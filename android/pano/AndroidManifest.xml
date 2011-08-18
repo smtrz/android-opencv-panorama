@@ -34,7 +34,7 @@
                 android:label="@string/app_name">
         </activity>
         <activity
-                android:name=".opencv.pano.PicasaUploadActivity"
+                android:name=".PicasaUploadActivity"
                 android:label="@string/app_name">
         </activity>
     </application>

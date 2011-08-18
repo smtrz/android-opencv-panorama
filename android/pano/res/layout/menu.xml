@@ -8,4 +8,8 @@
         android:id="@+id/menu_advanced"
         android:icon="@drawable/ic_menu_settings"
         android:title="@string/menu_advanced" />
+    <item
+        android:id="@+id/menu_connect"
+        android:icon="@android:drawable/ic_menu_search"
+        android:title="@string/connect_to_pantilt" />
 </menu>

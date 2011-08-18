@@ -3,14 +3,14 @@
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at 
+ * You may obtain a copy of the License at
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software 
+ * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and 
+ * See the License for the specific language governing permissions and
  * limitations under the License.
  */
 
@@ -32,6 +32,8 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -67,7 +69,7 @@ import android.widget.ViewSwitcher.ViewFactory;
 public class PanoActivity extends Activity implements ViewFactory, OnClickListener {
     public static final String SETTINGS                = "Pano_Settings";
 
-    // persistent settings key's
+    // persistent settings keys
     private final String SETTINGS_SAVE_PATH            = "path";
     private final String SETTINGS_IMAGE_PREFIX         = "image";
     private final String SETTINGS_OUTPUT_IMAGE         = "output";
@@ -93,6 +95,10 @@ public class PanoActivity extends Activity implements ViewFactory, OnClickListen
     public static final int DIALOG_SUCCESS             = 4;
     public static final int DIALOG_ERROR               = 5;
 
+    // Intent request codes
+    private static final int REQUEST_CONNECT_DEVICE = 300;
+    private static final int REQUEST_ENABLE_BT = 301;
+
     // runtime setting
     private SharedPreferences mSettings;
     private String mDirPath;
@@ -115,6 +121,8 @@ public class PanoActivity extends Activity implements ViewFactory, OnClickListen
     private Button mShareButton;
     private Button mUploadButton;
     private Button mRestitchButton;
+
+    private BluetoothAdapter mBluetoothAdapter = null;
 
     /**
      * Called when activity is first created.
@@ -156,10 +164,25 @@ public class PanoActivity extends Activity implements ViewFactory, OnClickListen
         mRestitchButton = (Button) findViewById(R.id.main_button_restitch);
         mRestitchButton.setVisibility(View.INVISIBLE);
         mRestitchButton.setOnClickListener(this);
+
+        // Get local Bluetooth adapter
+        mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+
+        // If Bluetooth is not on, request that it be enabled.
+        if (mBluetoothAdapter != null && !mBluetoothAdapter.isEnabled()) {
+            Intent enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+            startActivityForResult(enableIntent, REQUEST_ENABLE_BT);
+        }
     }
 
     /**
-     * 
+     *
      */
     @Override
     public void onResume() {
@@ -235,7 +258,6 @@ public class PanoActivity extends Activity implements ViewFactory, OnClickListen
         startActivityForResult(createCaptureIntent(), PanoCamera.INTENT_TAKE_PICTURE);
     }
 
-    /* TODO: implement menu options
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
@@ -250,11 +272,14 @@ public class PanoActivity extends Activity implements ViewFactory, OnClickListen
         case R.id.menu_advanced:
             // Show advanced editor
             return true;
-        default:
-            return super.onOptionsItemSelected(item);
+        case R.id.menu_connect:
+            // Connect to pan/tilt head
+            Intent serverIntent = new Intent(this, DeviceListActivity.class);
+            startActivityForResult(serverIntent, REQUEST_CONNECT_DEVICE);
+            return true;
         }
+      return true;
     }
-    */
 
     /**
      * Processes data from start activity for results
@@ -276,6 +301,27 @@ public class PanoActivity extends Activity implements ViewFactory, OnClickListen
                 Toast.makeText(this, R.string.network_error, Toast.LENGTH_SHORT).show();
             } else {
                 Toast.makeText(this, R.string.protocol_error, Toast.LENGTH_SHORT).show();
+            }
+        } else if (requestCode == DeviceListActivity.INTENT_CONNECT_TO_PANTILT) {
+            switch (requestCode) {
+            case REQUEST_CONNECT_DEVICE:
+                // When DeviceListActivity returns with a device to connect
+                if (resultCode == Activity.RESULT_OK) {
+                    // Get the device MAC address
+                    String address = data.getExtras()
+                                         .getString(DeviceListActivity.EXTRA_DEVICE_ADDRESS);
+                    // Get the BLuetoothDevice object
+                    BluetoothDevice device = mBluetoothAdapter.getRemoteDevice(address);
+                    // TODO: Attempt to connect to the device
+                }
+                break;
+            case REQUEST_ENABLE_BT:
+                // When the request to enable Bluetooth returns
+                if (resultCode == Activity.RESULT_OK) {
+                    // Bluetooth is now enabled
+                } else {
+                    // User did not enable Bluetooth or an error occured
+                }
             }
         }
     }
@@ -640,7 +686,7 @@ public class PanoActivity extends Activity implements ViewFactory, OnClickListen
             }
         }
     }
-    
+
     /**
      * Refreshes the Gallery View
      */

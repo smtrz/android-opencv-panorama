@@ -35,7 +35,7 @@ public class PanoCamera extends Activity {
     public static final String  EXTRA_DIR_PATH        = "dirPath";
     public static final String  EXTRA_FILE_NAME       = "name";
 
-    public static final int     INTENT_TAKE_PICTURE   = 0;
+    public static final int     INTENT_TAKE_PICTURE   = 200;
 
     private String              mDirPath              = null;
     private String              mFileName             = null;

@@ -57,7 +57,7 @@ import android.os.Bundle;
  * Manages google.com authToken and uploads images to their Picasa Drop Box
  */
 public class PicasaUploadActivity extends Activity {
-    public static final int     INTENT_UPLOAD_IMAGE   = 1;
+    public static final int     INTENT_UPLOAD_IMAGE   = 100;
 
     private static final String TAG                   = "GoogleAuthenticator";
     // http://code.google.com/apis/gdata/faq.html#clientlogin

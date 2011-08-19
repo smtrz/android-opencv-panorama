@@ -12,4 +12,8 @@
         android:id="@+id/menu_connect"
         android:icon="@android:drawable/ic_menu_search"
         android:title="@string/connect_to_pantilt" />
+    <item
+        android:id="@+id/menu_pantilt_capture"
+        android:icon="@android:drawable/ic_menu_camera"
+        android:title="@string/pantilt_capture" />
 </menu>

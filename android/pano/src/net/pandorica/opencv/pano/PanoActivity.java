@@ -114,15 +114,10 @@ public class PanoActivity extends Activity implements ViewFactory, OnClickListen
     public static final String TOAST = "toast";
 
     // Intent request codes
-    private static final int REQUEST_CONNECT_DEVICE = 300;
     private static final int REQUEST_ENABLE_BT = 301;
 
     // Name of the connected device
     private String mConnectedDeviceName = null;
-    // Array adapter for the conversation thread
-    //private ArrayAdapter<String> mConversationArrayAdapter;
-    // String buffer for outgoing messages
-    private StringBuffer mOutStringBuffer;
     // Local Bluetooth adapter
     private BluetoothAdapter mBluetoothAdapter = null;
     // Member object for the chat services
@@ -194,7 +189,6 @@ public class PanoActivity extends Activity implements ViewFactory, OnClickListen
 
         // Get local Bluetooth adapter
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-
     }
 
     @Override
@@ -237,32 +231,20 @@ public class PanoActivity extends Activity implements ViewFactory, OnClickListen
                 if(D) Log.i(TAG, "MESSAGE_STATE_CHANGE: " + msg.arg1);
                 switch (msg.arg1) {
                 case BluetoothChatService.STATE_CONNECTED:
-                  /*
-                    mTitle.setText(R.string.title_connected_to);
-                    mTitle.append(mConnectedDeviceName);
-                    mConversationArrayAdapter.clear();
-                    */
                     break;
                 case BluetoothChatService.STATE_CONNECTING:
-                    //mTitle.setText(R.string.title_connecting);
                     break;
                 case BluetoothChatService.STATE_LISTEN:
                 case BluetoothChatService.STATE_NONE:
-                    //mTitle.setText(R.string.title_not_connected);
                     break;
                 }
                 break;
             case MESSAGE_WRITE:
-                byte[] writeBuf = (byte[]) msg.obj;
-                // construct a string from the buffer
-                String writeMessage = new String(writeBuf);
-                //mConversationArrayAdapter.add("Me:  " + writeMessage);
                 break;
             case MESSAGE_READ:
                 byte[] readBuf = (byte[]) msg.obj;
                 // construct a string from the valid bytes in the buffer
                 String readMessage = new String(readBuf, 0, msg.arg1);
-                //mConversationArrayAdapter.add(mConnectedDeviceName+":  " + readMessage);
                 break;
             case MESSAGE_DEVICE_NAME:
                 // save the connected device's name
@@ -279,57 +261,11 @@ public class PanoActivity extends Activity implements ViewFactory, OnClickListen
     };
 
     private void setupChat() {
-      /*
-        // Initialize the array adapter for the conversation thread
-        mConversationArrayAdapter = new ArrayAdapter<String>(this, R.layout.message);
-        mConversationView = (ListView) findViewById(R.id.in);
-        mConversationView.setAdapter(mConversationArrayAdapter);
-
-        // Initialize the compose field with a listener for the return key
-        mOutEditText = (EditText) findViewById(R.id.edit_text_out);
-        mOutEditText.setOnEditorActionListener(mWriteListener);
-
-        // Initialize the send button with a listener that for click events
-        mSendButton = (Button) findViewById(R.id.button_send);
-        mSendButton.setOnClickListener(new OnClickListener() {
-            public void onClick(View v) {
-                // Send a message using content of the edit text widget
-                TextView view = (TextView) findViewById(R.id.edit_text_out);
-                String message = view.getText().toString();
-                sendMessage(message);
-            }
-        });
-        */
-
         // Initialize the BluetoothChatService to perform bluetooth connections
         mChatService = new BluetoothChatService(this, mBluetoothChatHandler);
 
         // Initialize the buffer for outgoing messages
         mOutStringBuffer = new StringBuffer("");
-
-        /*
-        Thread exercise_pantilt = new Thread() {
-          public void run() {
-        int max_pan = 360;
-        int pan_increment = 36;
-
-        int max_tilt = 46;
-        int tilt_increment = 45;
-        while (true) {
-          for (int tilt = 0; tilt < max_tilt; tilt += tilt_increment) {
-            sendMessage("t " + tilt);
-            for (int pan = 0; pan < max_pan; pan += pan_increment) {
-              sendMessage("p " + pan);
-              try {
-              sleep(1);
-              } catch (Exception e) { }
-            }
-          }
-        }
-          }
-        };
-        exercise_pantilt.start();
-        */
     }
 
     /**
@@ -348,11 +284,34 @@ public class PanoActivity extends Activity implements ViewFactory, OnClickListen
     }
 
     /**
+     * Sends a message.
+     * @param message  A string of text to send.
+     * TODO: This probably isn't the best class to hold this method, since it's
+     * only used by PanTiltCapture.
+     */
+    public void SendMessage(String message) {
+        // Check that we're actually connected before trying anything
+        if (mChatService.getState() != BluetoothChatService.STATE_CONNECTED) {
+            Toast.makeText(this, R.string.not_connected, Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Check that there's actually something to send
+        if (message.length() > 0) {
+            // Get the message bytes and tell the BluetoothChatService to write
+            byte[] send = message.getBytes();
+            mChatService.write(send);
+        }
+    }
+
+
+    /**
      * Generates a new folder name, creates the folder, and returns the name
      */
     private void createNewPano() {
         createNewPano(true);
     }
+
     /**
      * Generates a new folder name, creates the folder, and returns the name
      */
@@ -415,12 +374,14 @@ public class PanoActivity extends Activity implements ViewFactory, OnClickListen
             // Show advanced editor
             return true;
         case R.id.menu_pantilt_capture:
-            new PanTiltCapture().execute();
+            PanTiltCapture pan_tilt_capture = new PanTiltCapture();
+            pan_tilt_capture.SetCaller(this);
+            pan_tilt_capture.execute();
             return true;
         case R.id.menu_connect:
             // Connect to pan/tilt head
             Intent serverIntent = new Intent(this, DeviceListActivity.class);
-            startActivityForResult(serverIntent, REQUEST_CONNECT_DEVICE);
+            startActivityForResult(serverIntent, DeviceListActivity.INTENT_CONNECT_TO_PANTILT);
             return true;
         }
       return true;
@@ -448,25 +409,24 @@ public class PanoActivity extends Activity implements ViewFactory, OnClickListen
                 Toast.makeText(this, R.string.protocol_error, Toast.LENGTH_SHORT).show();
             }
         } else if (requestCode == DeviceListActivity.INTENT_CONNECT_TO_PANTILT) {
-            switch (requestCode) {
-            case REQUEST_CONNECT_DEVICE:
-                // When DeviceListActivity returns with a device to connect
-                if (resultCode == Activity.RESULT_OK) {
-                    // Get the device MAC address
-                    String address = data.getExtras()
-                                         .getString(DeviceListActivity.EXTRA_DEVICE_ADDRESS);
-                    // Get the BLuetoothDevice object
-                    BluetoothDevice device = mBluetoothAdapter.getRemoteDevice(address);
-                    // TODO: Attempt to connect to the device
-                }
-                break;
-            case REQUEST_ENABLE_BT:
-                // When the request to enable Bluetooth returns
-                if (resultCode == Activity.RESULT_OK) {
-                    // Bluetooth is now enabled
-                } else {
-                    // User did not enable Bluetooth or an error occured
-                }
+            Log.i(TAG, "Connecting to pantilt");
+            // When DeviceListActivity returns with a device to connect
+            if (resultCode == Activity.RESULT_OK) {
+                // Get the device MAC address
+                String address = data.getExtras()
+                                     .getString(DeviceListActivity.EXTRA_DEVICE_ADDRESS);
+                // Get the BLuetoothDevice object
+                BluetoothDevice device = mBluetoothAdapter.getRemoteDevice(address);
+                // Attempt to connect to the device
+                mChatService.connect(device);
+            }
+        } else if (requestCode == REQUEST_ENABLE_BT) {
+            // When the request to enable Bluetooth returns
+            if (resultCode == Activity.RESULT_OK) {
+                Log.i(TAG, "Bluetooth now enabled.");
+                // Bluetooth is now enabled
+            } else {
+                // User did not enable Bluetooth or an error occured
             }
         }
     }
@@ -559,8 +519,7 @@ public class PanoActivity extends Activity implements ViewFactory, OnClickListen
                     mCurrentImage + ".png", mYuv);
             Bitmap jpg = BitmapFactory.decodeFile(mDirPath +mSubDir+
                     mImagePrefix + mCurrentImage + ".png");
-            /** **/
-            
+
             // cleanup
             mIntermediate.dispose();
             mYuv.dispose();
@@ -756,7 +715,8 @@ public class PanoActivity extends Activity implements ViewFactory, OnClickListen
             mContext = c;
 
             TypedArray typeArray = obtainStyledAttributes(R.styleable.main_gallery);
-            itemBackground = typeArray.getResourceId(R.styleable.main_gallery_android_galleryItemBackground, 0);
+            itemBackground = typeArray.getResourceId(
+                R.styleable.main_gallery_android_galleryItemBackground, 0);
             typeArray.recycle();
             updateFolders();
         }
@@ -826,7 +786,8 @@ public class PanoActivity extends Activity implements ViewFactory, OnClickListen
                 if (f != null) {
                     mSubDir = f.getParentFile().getName() + "/";
                     mImageSwitcher.setImageDrawable(new BitmapDrawable(
-                            BitmapFactory.decodeFile(getDirImage(position-1).getAbsolutePath(), options)));
+                            BitmapFactory.decodeFile(getDirImage(position-1).getAbsolutePath(),
+                                                     options)));
                 }
             }
         }

@@ -46,7 +46,7 @@ public class BluetoothChatService {
     private static final String NAME = "BluetoothChat";
 
     // Unique UUID for this application
-    private static final UUID MY_UUID = UUID.fromString("11235813-0000-abcd-1234-ffffff000000");
+    private static final UUID MY_UUID = UUID.fromString("fa87c0d0-afac-11de-8a39-0800200c9a66");
 
     // Member fields
     private final BluetoothAdapter mAdapter;
@@ -68,6 +68,7 @@ public class BluetoothChatService {
      * @param handler  A Handler to send messages back to the UI Activity
      */
     public BluetoothChatService(Context context, Handler handler) {
+        if (D) Log.d(TAG, "BluetoothChatService constructor");
         mAdapter = BluetoothAdapter.getDefaultAdapter();
         mState = STATE_NONE;
         mHandler = handler;

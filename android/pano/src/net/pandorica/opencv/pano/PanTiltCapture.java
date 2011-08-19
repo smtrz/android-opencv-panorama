@@ -29,6 +29,7 @@ public class PanTiltCapture extends AsyncTask<Integer, Void, Integer>
      implements Camera.PictureCallback {
 
     private Object semaphore = new Object();
+    private PanoActivity mCaller;
 
     protected Integer doInBackground(Integer... unused) {
         Camera c = Camera.open();
@@ -39,35 +40,46 @@ public class PanTiltCapture extends AsyncTask<Integer, Void, Integer>
         } catch (IOException e) {
         }
 
+        int max_pan = 360;
+        int pan_increment = 36;
 
-        for (int i=0; i<10; i++) {
-            boolean success = false;
-            while (!success) {
-              try {
-                Log.i("jpegCallback", "Start preview");
-                c.startPreview();
-                success = true;
-              } catch (java.lang.RuntimeException e) {
-              }
-            }
+        int max_tilt = 46;
+        int tilt_increment = 45;
+        for (int tilt = 0; tilt < max_tilt; tilt += tilt_increment) {
+            mCaller.SendMessage("t " + tilt);
+            for (int pan = 0; pan < max_pan; pan += pan_increment) {
+                mCaller.SendMessage("p " + pan);
 
-            success = false;
-            while (!success) {
-              try {
-                Log.i("jpegCallback", "Take picture");
-                c.takePicture(null, null, this);
-                success = true;
-              } catch (java.lang.RuntimeException e) {
-              }
-            }
+                // TODO: Get back a message from pantilt when it's finished
+                // moving
+                boolean success = false;
+                while (!success) {
+                  try {
+                    Log.i("jpegCallback", "Start preview");
+                    c.startPreview();
+                    success = true;
+                  } catch (java.lang.RuntimeException e) {
+                  }
+                }
 
-            try {
-              synchronized(semaphore) {
-                semaphore.wait();
-              }
-            } catch (InterruptedException e) {
+                success = false;
+                while (!success) {
+                  try {
+                    Log.i("jpegCallback", "Take picture");
+                    c.takePicture(null, null, this);
+                    success = true;
+                  } catch (java.lang.RuntimeException e) {
+                  }
+                }
+
+                try {
+                  synchronized(semaphore) {
+                    semaphore.wait();
+                  }
+                } catch (InterruptedException e) {
+                }
+                c.stopPreview();
             }
-            c.stopPreview();
         }
 
         c.release();
@@ -79,5 +91,9 @@ public class PanTiltCapture extends AsyncTask<Integer, Void, Integer>
         synchronized(semaphore) {
           semaphore.notify();
         }
-    };
+    }
+
+    public void SetCaller(PanoActivity caller) {
+        mCaller = caller;
+    }
 }

@@ -1,3 +1,10 @@
+android/pantilt/bin/
+android/pantilt/gen/
+android/pantilt/libs/
+android/pantilt/obj/
+android/pantilt/build.xml
+android/pantilt/local.properties
+android/pantilt/proguard.cfg
 android/pano/bin/
 android/pano/gen/
 android/pano/libs/

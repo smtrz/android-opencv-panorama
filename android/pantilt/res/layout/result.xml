@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/layout_root"
+        android:orientation="vertical"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:padding="3dp" >
+    <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:padding="3dp" >
+        <ImageView
+                android:id="@+id/image"
+                android:scaleType="center"
+                android:gravity="center"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:padding="3dip"
+                android:layout_weight="1"
+                android:layout_below="@id/layout_root" />
+    </LinearLayout>
+    <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:padding="3dp" >
+        <Button
+                android:id="@+id/capture"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/continue_capturing"
+                android:layout_weight="1"
+                android:padding="1dp" />
+        <Button
+                android:id="@+id/retake"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/retake"
+                android:layout_weight="1"
+                android:padding="1dp" />
+        <Button
+                android:id="@+id/stitch"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/stitch_pano"
+                android:layout_weight="1"
+                android:padding="1dp" />
+    </LinearLayout>
+</LinearLayout>

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">OpenCV Pano</string>
+    <string name="default_folder">Panorama</string>
+    <string name="default_prefix">image</string>
+    <string name="continue_capturing">Capture Next</string>
+    <string name="stitch_pano">Finished</string>
+    <string name="retake">Recapture</string>
+    <string name="dialog_results_title">Image Capture Result</string>
+    <string name="dialog_stitching">Stitching. Please wait...</string>
+    <string name="dialog_uploading">Uploading. Please wait...</string>
+    <string name="intent_share_using">Share picture using:</string>
+    <string name="button_share">Share Image</string>
+    <string name="dialog_feature_comp">Increase the quality of your photos by rotating the phone around the camera (try to move the camera as little as possible).</string>
+    <string name="dialog_tip">Tip</string>
+    <string name="dialog_tip_show">Show Tip?</string>
+    <string name="button_upload">Upload to Picasa</string>
+    <string name="button_restitch">Re-Stitch</string>
+    <string name="dialog_error">There was an error in stitching your panorama.</string>
+    <string name="success">Success!</string>
+    <string name="cont">Continue</string>
+    <string name="close">Close</string>
+    <string name="exit">Exit</string>
+    <string name="menu_advanced">Settings</string>
+    <string name="menu_sort">Sort By</string>
+    <string name="success_uploaded">Image Uploaded</string>
+    <string name="file_404">File Not Found</string>
+    <string name="network_error">Network Error</string>
+    <string name="protocol_error">Upload Error</string>
+    <string name="connect_to_pantilt">Connect to pan/tilt head</string>
+    <string name="pantilt_capture">Capture with pan/tilt head</string>
+    <string name="title_paired_devices">Paired devices</string>
+    <string name="button_scan">Scan for devices</string>
+    <string name="title_other_devices">Other devices</string>
+    <string name="not_connected">Not connected</string>
+
+    <!--  DeviceListActivity -->
+    <string name="scanning">scanning for devices...</string>
+    <string name="select_device">select a device to connect</string>
+    <string name="none_paired">No devices have been paired</string>
+    <string name="none_found">No devices found</string>
+    <string name="title_paired_devices">Paired Devices</string>
+    <string name="title_other_devices">Other Available Devices</string>
+    <string name="button_scan">Scan for devices</string>
+  </resources>

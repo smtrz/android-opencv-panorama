@@ -265,7 +265,7 @@ public class PanoActivity extends Activity implements ViewFactory, OnClickListen
         mChatService = new BluetoothChatService(this, mBluetoothChatHandler);
 
         // Initialize the buffer for outgoing messages
-        mOutStringBuffer = new StringBuffer("");
+        //mOutStringBuffer = new StringBuffer("");
     }
 
     /**
@@ -374,7 +374,9 @@ public class PanoActivity extends Activity implements ViewFactory, OnClickListen
             // Show advanced editor
             return true;
         case R.id.menu_pantilt_capture:
-            PanTiltCapture pan_tilt_capture = new PanTiltCapture();
+            PanTiltCapture pan_tilt_capture = new PanTiltCapture(mDefaultPath,
+                                                                 mDefaultImagePrefix,
+                                                                 mType);
             pan_tilt_capture.SetCaller(this);
             pan_tilt_capture.execute();
             return true;

@@ -37,13 +37,6 @@ import android.hardware.Camera.PreviewCallback;
 import android.os.AsyncTask;
 import android.util.Log;
 
-import org.opencv.core.Core;
-import org.opencv.core.Mat;
-import org.opencv.core.Size;
-import org.opencv.highgui.Highgui;
-import org.opencv.imgproc.Imgproc;
-
-
 public class PanTiltCapture extends AsyncTask<Integer, Void, Integer>
      implements Camera.PictureCallback {
 
@@ -203,32 +196,6 @@ public class PanTiltCapture extends AsyncTask<Integer, Void, Integer>
         } catch (java.io.IOException e) {
             // TODO: something useful here
         }
-
-        // TODO: copied from PanoActivity.  Where does it actually belong?
-        Mat mIntermediate = new Mat();
-        Mat mYuv = new Mat();
-
-        mIntermediate = Highgui.imread(full_filename);
-
-        Core.transpose(mIntermediate, mYuv);
-        Core.flip(mYuv, mIntermediate, 1);
-
-        Imgproc.resize(mIntermediate, mYuv, new Size(), 0.25, 0.25, Imgproc.CV_INTER_AREA);
-
-        /** Currently Not Working in OpenCV **/
-        /*
-        Bitmap jpg = Bitmap.createBitmap(mIntermediate.cols(), mIntermediate.rows(),
-                Bitmap.Config.ARGB_8888);
-        android.MatToBitmap(mIntermediate, jpg);
-        */
-        /** So we resort to this method **/
-        String png_filename = mPanoDirectory + mImagePrefix + mCurrentImage + ".png";
-        Log.i("jpegCallback", "Writing scaled " + png_filename);
-        Highgui.imwrite(png_filename, mYuv);
-
-        // cleanup
-        mIntermediate.dispose();
-        mYuv.dispose();
 
         // Slap the image into the pano thumbnail
         BitmapFactory.Options scale_factor = new BitmapFactory.Options();

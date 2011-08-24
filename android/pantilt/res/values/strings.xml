@@ -29,9 +29,6 @@
     <string name="protocol_error">Upload Error</string>
     <string name="connect_to_pantilt">Connect to pan/tilt head</string>
     <string name="pantilt_capture">Capture with pan/tilt head</string>
-    <string name="title_paired_devices">Paired devices</string>
-    <string name="button_scan">Scan for devices</string>
-    <string name="title_other_devices">Other devices</string>
     <string name="not_connected">Not connected</string>
 
     <!--  DeviceListActivity -->

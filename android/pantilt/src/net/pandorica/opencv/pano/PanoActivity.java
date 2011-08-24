@@ -22,12 +22,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import org.opencv.core.Core;
-import org.opencv.core.Mat;
-import org.opencv.core.Size;
-import org.opencv.highgui.Highgui;
-import org.opencv.imgproc.Imgproc;
-
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -499,38 +493,11 @@ public class PanoActivity extends Activity implements ViewFactory, OnClickListen
         case DIALOG_RESULTS:
             refreshView();
 
-            Mat mIntermediate = new Mat();
-            Mat mYuv = new Mat();
-
-            mIntermediate = Highgui.imread(mDirPath +mSubDir+
-                    mImagePrefix + mCurrentImage + mType);
-
-            Core.transpose(mIntermediate, mYuv);
-            Core.flip(mYuv, mIntermediate, 1);
-
-            Imgproc.resize(mIntermediate, mYuv, new Size(), 0.25, 0.25, Imgproc.CV_INTER_AREA);
-
-            /** Currently Not Working in OpenCV **/
-            /*
-            Bitmap jpg = Bitmap.createBitmap(mIntermediate.cols(), mIntermediate.rows(),
-                    Bitmap.Config.ARGB_8888);
-            android.MatToBitmap(mIntermediate, jpg);
-            */
-            /** So we resort to this method **/
-            Highgui.imwrite(mDirPath +mSubDir+ mImagePrefix +
-                    mCurrentImage + ".png", mYuv);
-            Bitmap jpg = BitmapFactory.decodeFile(mDirPath +mSubDir+
-                    mImagePrefix + mCurrentImage + ".png");
-
-            // cleanup
-            mIntermediate.dispose();
-            mYuv.dispose();
-
             ImageView image = (ImageView) dialog.findViewById(R.id.image);
             image.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
             image.setAdjustViewBounds(true);
             image.setPadding(2, 2, 2, 2);
-            image.setImageBitmap(jpg);
+            //image.setImageBitmap(jpg);
 
             Button capture = (Button) dialog.findViewById(R.id.capture);
             capture.setOnClickListener(new OnClickListener() {
@@ -551,7 +518,6 @@ public class PanoActivity extends Activity implements ViewFactory, OnClickListen
             stitch.setOnClickListener(new OnClickListener() {
 
                 public void onClick(View v) {
-                    new StitchPhotoTask().execute();
                 }
             });
 
@@ -649,26 +615,7 @@ public class PanoActivity extends Activity implements ViewFactory, OnClickListen
          */
         @Override
         protected Integer doInBackground(Void... v) {
-            List<String> s = new ArrayList<String>();
-            s.add("Stitch");
-            for (int i = 0; i < mCurrentImage; i++) {
-                s.add(mDirPath + mSubDir + mImagePrefix + (i+1) + ".png");
-            }
-            s.add("--warp");
-            s.add(mWarpType);
-            s.add("--conf_thresh");
-            s.add(mConfThresh);
-            s.add("--match_conf");
-            s.add(mMatchConf);
-            s.add("--work_megapix");
-            s.add("0.2");
-            s.add("--seam_megapix");
-            s.add("0.2");
-            s.add("--expos_comp");
-            s.add("gain");
-            s.add("--output");
-            s.add(mDirPath + mSubDir + mOutputImage);
-            return Stitch(s.toArray());
+          return 0;
         }
 
         /**
@@ -680,29 +627,6 @@ public class PanoActivity extends Activity implements ViewFactory, OnClickListen
             if (ret == 0) showDialog(DIALOG_SUCCESS);
             else showDialog(DIALOG_ERROR);
         }
-    }
-
-    /**
-     * Natively stitches images together. Takes a string array of equivalent command line arguments
-     * @param args
-     * @return
-     */
-    public native int Stitch(Object[] args);
-
-    /**
-     * Loads Native Libraries
-     */
-    static {
-        System.loadLibrary("precomp");
-        System.loadLibrary("util");
-        System.loadLibrary("matchers");
-        System.loadLibrary("autocalib");
-        System.loadLibrary("blenders");
-        System.loadLibrary("exposure_compensate");
-        System.loadLibrary("motion_estimators");
-        System.loadLibrary("seam_finders");
-        System.loadLibrary("warpers");
-        System.loadLibrary("opencv_stitcher");
     }
 
     /**

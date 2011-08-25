@@ -108,6 +108,18 @@ public class PanTiltCapture extends AsyncTask<Integer, Void, Integer>
             mCaller.SendMessage("o\r");
 
             for (int pan = 0; pan < max_pan; pan += pan_increment) {
+                // Start the preview before we move the head so it has a chance
+                // to do AWB and whatnot.
+                boolean success = false;
+                while (!success) {
+                  try {
+                    Log.i("jpegCallback", "Start preview");
+                    c.startPreview();
+                    success = true;
+                  } catch (java.lang.RuntimeException e) {
+                  }
+                }
+
                 mCaller.SendMessage("p" + pan + "\r");
                 try { Thread.sleep(1000); } catch (InterruptedException e) { }
                 mCaller.SendMessage("o" + pan + "\r");
@@ -120,16 +132,6 @@ public class PanTiltCapture extends AsyncTask<Integer, Void, Integer>
 
                 // TODO: Get back a message from pantilt when it's finished
                 // moving
-
-                boolean success = false;
-                while (!success) {
-                  try {
-                    Log.i("jpegCallback", "Start preview");
-                    c.startPreview();
-                    success = true;
-                  } catch (java.lang.RuntimeException e) {
-                  }
-                }
 
                 success = false;
                 while (!success) {

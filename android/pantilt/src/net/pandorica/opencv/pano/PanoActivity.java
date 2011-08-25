@@ -127,7 +127,7 @@ public class PanoActivity extends Activity implements ViewFactory, OnClickListen
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        //setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
         // Initialize Dynamic Defaults
         mDefaultPath = Environment.getExternalStorageDirectory().toString()

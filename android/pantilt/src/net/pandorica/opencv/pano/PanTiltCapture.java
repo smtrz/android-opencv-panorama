@@ -43,7 +43,7 @@ public class PanTiltCapture extends AsyncTask<Integer, Void, Integer>
     private Object semaphore = new Object();
     private PanoActivity mCaller;
 
-    private String mPanoDirectory;  // The complete directory name where we put the images
+    private String mPanoSubdirectory;  // The directory name where we put the images
     private String mBasePath;       // The directory holding all the pano subdirs
     private int mCurrentImage;
     private int mThumbnailX;
@@ -64,9 +64,8 @@ public class PanTiltCapture extends AsyncTask<Integer, Void, Integer>
         SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd_HHmmss");
         StringBuilder b = new StringBuilder(df.format(new Date()));
 
-        String subdirectory = b.toString()+ "/";
-        mPanoDirectory = mBasePath + subdirectory;
-        File dir = new File(mPanoDirectory);
+        mPanoSubdirectory = b.toString();
+        File dir = new File(mBasePath + mPanoSubdirectory + "/");
         if (!dir.exists()) {
             dir.mkdirs();
         }
@@ -160,7 +159,8 @@ public class PanTiltCapture extends AsyncTask<Integer, Void, Integer>
         mCaller.SendMessage("o\r");
 
         try {
-            FileOutputStream out = new FileOutputStream(mPanoDirectory + "result.jpg");
+            FileOutputStream out = new FileOutputStream(mBasePath + mPanoSubdirectory +
+                                                        "/" + mPanoSubdirectory + "_result.jpg");
             mThumbnailPano.compress(Bitmap.CompressFormat.JPEG, 60, out);
         } catch (Exception e) {
             // TODO: Do something useful here
@@ -184,11 +184,11 @@ public class PanTiltCapture extends AsyncTask<Integer, Void, Integer>
     public void onPictureTaken(byte[] data, Camera camera) {
         Log.i("jpegCallback", "Picture taken!");
 
-        String filename = mImagePrefix + mCurrentImage + mType;
-        String full_filename = mPanoDirectory + filename;
+        String filename = mImagePrefix + "_" + mPanoSubdirectory + "_" + mCurrentImage + mType;
+        String full_filename = mBasePath + mPanoSubdirectory + "/" + filename;
         Log.i("jpegCallback", "Writing " + full_filename);
 
-        File photo = new File(mPanoDirectory, filename);
+        File photo = new File(mBasePath + mPanoSubdirectory, filename);
         try {
             FileOutputStream fos = new FileOutputStream(photo.getAbsolutePath());
             fos.write(data);

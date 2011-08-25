@@ -24,21 +24,4 @@
         android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
         />
-    <Button
-        android:id="@+id/main_button_upload"
-        android:text="@string/button_upload"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_toRightOf="@id/main_button_share"
-        />
-    <Button
-        android:id="@+id/main_button_restitch"
-        android:text="@string/button_restitch"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_toRightOf="@id/main_button_upload"
-        android:layout_alignParentRight="true"
-        />
 </RelativeLayout>

@@ -28,6 +28,7 @@ import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -72,29 +73,13 @@ public class PanoActivity extends Activity implements ViewFactory, OnClickListen
 
     // persistent settings keys
     private final String SETTINGS_SAVE_PATH            = "path";
-    private final String SETTINGS_IMAGE_PREFIX         = "image";
+    private final String SETTINGS_IMAGE_PREFIX         = "pano";
     private final String SETTINGS_OUTPUT_IMAGE         = "output";
-    private final String SETTINGS_WARP_TYPE            = "warp";
-    private final String SETTINGS_MATCH_CONF           = "match_conf";
-    private final String SETTINGS_CONF_THRESH          = "conf_thresh";
-    private final String SETTINGS_SHOW_TIP             = "show_tip";
 
     // default settings
     private String mDefaultPath;
     private String mDefaultImagePrefix;
     private String mDefaultOutputName                  = "result.jpg";
-    private String mDefaultWarpType                    = "spherical";
-    private String mDefaultMatchConf                   = "0.5";
-    private String mDefaultConfThresh                  = "0.8";
-    private boolean mDefaultShowTip                    = true;
-
-    // possible dialogs to open
-    public static final int DIALOG_RESULTS             = 0;
-    public static final int DIALOG_STITCHING           = 1;
-    public static final int DIALOG_FEATURE_COMPARISON  = 2;
-    public static final int DIALOG_FEATURE_ALPHA       = 3;
-    public static final int DIALOG_SUCCESS             = 4;
-    public static final int DIALOG_ERROR               = 5;
 
     // Message types sent from the BluetoothChatService Handler
     public static final int MESSAGE_STATE_CHANGE = 1;
@@ -122,11 +107,7 @@ public class PanoActivity extends Activity implements ViewFactory, OnClickListen
     private String mDirPath;
     private String mImagePrefix;
     private String mOutputImage;
-    private String mWarpType;
-    private String mMatchConf;
-    private String mConfThresh;
     private String mSubDir = null;
-    private boolean mShowTip;
 
     private String mType                               = ".jpg";
     public static final String MIME_TYPE               = "image/jpg";
@@ -137,8 +118,6 @@ public class PanoActivity extends Activity implements ViewFactory, OnClickListen
     private List<File> mDirectories;
 
     private Button mShareButton;
-    private Button mUploadButton;
-    private Button mRestitchButton;
 
     /**
      * Called when activity is first created.
@@ -172,14 +151,6 @@ public class PanoActivity extends Activity implements ViewFactory, OnClickListen
         mShareButton = (Button) findViewById(R.id.main_button_share);
         mShareButton.setVisibility(View.INVISIBLE);
         mShareButton.setOnClickListener(this);
-
-        mUploadButton = (Button) findViewById(R.id.main_button_upload);
-        mUploadButton.setVisibility(View.INVISIBLE);
-        mUploadButton.setOnClickListener(this);
-
-        mRestitchButton = (Button) findViewById(R.id.main_button_restitch);
-        mRestitchButton.setVisibility(View.INVISIBLE);
-        mRestitchButton.setOnClickListener(this);
 
         // Get local Bluetooth adapter
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -257,9 +228,6 @@ public class PanoActivity extends Activity implements ViewFactory, OnClickListen
     private void setupChat() {
         // Initialize the BluetoothChatService to perform bluetooth connections
         mChatService = new BluetoothChatService(this, mBluetoothChatHandler);
-
-        // Initialize the buffer for outgoing messages
-        //mOutStringBuffer = new StringBuffer("");
     }
 
     /**
@@ -270,10 +238,6 @@ public class PanoActivity extends Activity implements ViewFactory, OnClickListen
         mDirPath = mSettings.getString(SETTINGS_SAVE_PATH, mDefaultPath);
         mImagePrefix = mSettings.getString(SETTINGS_IMAGE_PREFIX, mDefaultImagePrefix);
         mOutputImage = mSettings.getString(SETTINGS_OUTPUT_IMAGE, mDefaultOutputName);
-        mWarpType = mSettings.getString(SETTINGS_WARP_TYPE, mDefaultWarpType);
-        mMatchConf = mSettings.getString(SETTINGS_MATCH_CONF, mDefaultMatchConf);
-        mConfThresh = mSettings.getString(SETTINGS_CONF_THRESH, mDefaultConfThresh);
-        mShowTip = mSettings.getBoolean(SETTINGS_SHOW_TIP, mDefaultShowTip);
         return true;
     }
 
@@ -286,7 +250,8 @@ public class PanoActivity extends Activity implements ViewFactory, OnClickListen
     public void SendMessage(String message) {
         // Check that we're actually connected before trying anything
         if (mChatService.getState() != BluetoothChatService.STATE_CONNECTED) {
-            Toast.makeText(this, R.string.not_connected, Toast.LENGTH_SHORT).show();
+            // TODO: better error handling here
+            //Toast.makeText(this, R.string.not_connected, Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -299,112 +264,27 @@ public class PanoActivity extends Activity implements ViewFactory, OnClickListen
     }
 
 
-    /**
-     * Generates a new folder name, creates the folder, and returns the name
-     */
     private void createNewPano() {
-        createNewPano(true);
-    }
-
-    /**
-     * Generates a new folder name, creates the folder, and returns the name
-     */
-    private void createNewPano(boolean capture) {
-        // generate the default folder name
-        SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd_HHmmss");
-        StringBuilder b = new StringBuilder(df.format(new Date()));
-
-        mSubDir = b.toString()+ "/";
-        mCurrentImage = 1;
-
-        if (capture) {
-            if (mShowTip) showDialog(DIALOG_FEATURE_COMPARISON);
-            else capturePhoto();
-        }
-    }
-
-    /**
-     * Builds a new Intent to be passed to Camera Activity for taking a picture
-     * @return Intent
-     */
-    private Intent createCaptureIntent() {
-        if (mSubDir == null) createNewPano(false);
-        Intent intent = new Intent(
-                MediaStore.ACTION_IMAGE_CAPTURE,
-                Uri.fromFile(new File(mDirPath + mSubDir + mImagePrefix + mCurrentImage + mType)),
-                getApplicationContext(), PanoCamera.class);
-        intent.putExtra(PanoCamera.EXTRA_DIR_PATH, mDirPath + mSubDir);
-        intent.putExtra(PanoCamera.EXTRA_FILE_NAME,
-                mImagePrefix + mCurrentImage + mType);
-        return intent;
-    }
-
-    /**
-     * Starts a new activity with generated Intent
-     * Attempts to close the FEATURE_COMPARISON Tip Dialog.
-     * Continue if it hasn't been shown since we only want to make sure it isn't open
-     */
-    private void capturePhoto() {
-        try {
-            dismissDialog(DIALOG_FEATURE_COMPARISON);
-        } catch (IllegalArgumentException e) {
-            // Catch and continue, make sure dialog is gone (see method doc)
-        }
-        startActivityForResult(createCaptureIntent(), PanoCamera.INTENT_TAKE_PICTURE);
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.layout.menu, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle item selection
-        switch (item.getItemId()) {
-        case R.id.menu_advanced:
-            // Show advanced editor
-            return true;
-        case R.id.menu_pantilt_capture:
-            PanTiltCapture pan_tilt_capture = new PanTiltCapture(mDefaultPath,
-                                                                 mDefaultImagePrefix,
-                                                                 mType);
-            pan_tilt_capture.SetCaller(this);
-            pan_tilt_capture.execute();
-            return true;
-        case R.id.menu_connect:
+        if (mChatService.getState() != BluetoothChatService.STATE_CONNECTED) {
+            Toast.makeText(this, R.string.not_connected, Toast.LENGTH_SHORT).show();
             // Connect to pan/tilt head
             Intent serverIntent = new Intent(this, DeviceListActivity.class);
             startActivityForResult(serverIntent, DeviceListActivity.INTENT_CONNECT_TO_PANTILT);
-            return true;
+            return;
         }
-      return true;
+
+        PanTiltCapture pan_tilt_capture = new PanTiltCapture(mDefaultPath,
+                                                             mDefaultImagePrefix,
+                                                             mType);
+        pan_tilt_capture.SetCaller(this);
+        pan_tilt_capture.execute();
     }
 
     /**
      * Processes data from start activity for results
      */
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == PanoCamera.INTENT_TAKE_PICTURE) {
-            if (resultCode == RESULT_OK) {
-                showDialog(DIALOG_RESULTS);
-            }
-        } else if (requestCode == PicasaUploadActivity.INTENT_UPLOAD_IMAGE) {
-            if (resultCode == RESULT_OK) {
-                // Success
-                Toast.makeText(this, R.string.success_uploaded, Toast.LENGTH_SHORT).show();
-            } else if (resultCode == RESULT_CANCELED) {
-                // File Not Found
-                Toast.makeText(this, R.string.file_404, Toast.LENGTH_SHORT).show();
-            } else if (resultCode == RESULT_FIRST_USER) {
-                // Network Error
-                Toast.makeText(this, R.string.network_error, Toast.LENGTH_SHORT).show();
-            } else {
-                Toast.makeText(this, R.string.protocol_error, Toast.LENGTH_SHORT).show();
-            }
-        } else if (requestCode == DeviceListActivity.INTENT_CONNECT_TO_PANTILT) {
+        if (requestCode == DeviceListActivity.INTENT_CONNECT_TO_PANTILT) {
             Log.i(TAG, "Connecting to pantilt");
             // When DeviceListActivity returns with a device to connect
             if (resultCode == Activity.RESULT_OK) {
@@ -424,208 +304,6 @@ public class PanoActivity extends Activity implements ViewFactory, OnClickListen
             } else {
                 // User did not enable Bluetooth or an error occured
             }
-        }
-    }
-
-    /**
-     * Creates dialog static data
-     */
-    @Override
-    protected Dialog onCreateDialog(int id) {
-        Dialog dialog;
-        AlertDialog.Builder builder;
-        switch(id) {
-        case DIALOG_FEATURE_COMPARISON:
-            Dialog tip = new Dialog(this);
-            tip.setContentView(R.layout.tip);
-            tip.setTitle(R.string.dialog_tip);
-            tip.setCancelable(true);
-
-            dialog = tip;
-            break;
-        case DIALOG_RESULTS:
-            Dialog progress = new Dialog(this);
-            progress.setContentView(R.layout.result);
-            progress.setTitle(R.string.dialog_results_title);
-            progress.setCancelable(false);
-
-            dialog = progress;
-            break;
-        case DIALOG_STITCHING:
-            ProgressDialog stitching = ProgressDialog.show(PanoActivity.this, "",
-                    getResources().getString(R.string.dialog_stitching), true);
-            stitching.setCancelable(false);
-            dialog = stitching;
-            break;
-        case DIALOG_ERROR:
-            builder = new AlertDialog.Builder(this);
-            builder.setMessage(R.string.dialog_error)
-                   .setCancelable(false)
-                   .setNegativeButton(R.string.exit, new DialogInterface.OnClickListener() {
-
-                    public void onClick(DialogInterface dialog, int which) {
-                        PanoActivity.this.finish();
-                    }
-                });
-            dialog = builder.create();
-            break;
-        case DIALOG_SUCCESS:
-            Dialog success = new Dialog(this);
-            success.setContentView(R.layout.success);
-            success.setTitle(R.string.success);
-            success.setCancelable(false);
-
-            dialog = success;
-            break;
-        default:
-            dialog = null;
-            break;
-        }
-        return dialog;
-    }
-
-    /**
-     * Prepares dialogs dynamic content
-     */
-    @Override
-    protected void onPrepareDialog(int id, Dialog dialog) {
-        switch (id) {
-        case DIALOG_RESULTS:
-            refreshView();
-
-            ImageView image = (ImageView) dialog.findViewById(R.id.image);
-            image.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
-            image.setAdjustViewBounds(true);
-            image.setPadding(2, 2, 2, 2);
-            //image.setImageBitmap(jpg);
-
-            Button capture = (Button) dialog.findViewById(R.id.capture);
-            capture.setOnClickListener(new OnClickListener() {
-
-                public void onClick(View v) {
-                    mCurrentImage++;
-                    capturePhoto();
-                }
-            });
-            Button retake = (Button) dialog.findViewById(R.id.retake);
-            retake.setOnClickListener(new OnClickListener() {
-
-                public void onClick(View v) {
-                    capturePhoto();
-                }
-            });
-            Button stitch = (Button) dialog.findViewById(R.id.stitch);
-            stitch.setOnClickListener(new OnClickListener() {
-
-                public void onClick(View v) {
-                }
-            });
-
-            break;
-        case DIALOG_SUCCESS:
-            final File img = new File(mDirPath + mSubDir + mOutputImage);
-            Bitmap result = BitmapFactory.decodeFile(img.getAbsolutePath());
-
-            ImageView png = (ImageView) dialog.findViewById(R.id.image);
-            png.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
-            png.setAdjustViewBounds(true);
-            png.setPadding(3, 3, 3, 3);
-            png.setImageBitmap(result);
-
-            refreshView();
-
-            Button share = (Button) dialog.findViewById(R.id.share);
-            share.setOnClickListener(new OnClickListener() {
-
-                public void onClick(View v) {
-                    shareImage(img);
-                    dismissDialog(DIALOG_SUCCESS);
-                }
-            });
-
-            Button upload = (Button) dialog.findViewById(R.id.upload);
-            upload.setOnClickListener(new OnClickListener() {
-
-                public void onClick(View v) {
-                    uploadImage(img);
-                    dismissDialog(DIALOG_SUCCESS);
-                }
-            });
-
-            Button exit = (Button) dialog.findViewById(R.id.close);
-            exit.setOnClickListener(new OnClickListener() {
-
-                public void onClick(View v) {
-                    dismissDialog(DIALOG_SUCCESS);
-                }
-            });
-            break;
-        case DIALOG_FEATURE_COMPARISON:
-            CheckBox box = (CheckBox) dialog.findViewById(R.id.show_tip);
-            box.setChecked(mShowTip);
-            box.setOnClickListener(new OnClickListener() {
-
-                @Override
-                public void onClick(View v) {
-                    mShowTip = ((CheckBox)v).isChecked();
-                    SharedPreferences settings = getSharedPreferences(SETTINGS, 0);
-                    SharedPreferences.Editor editor = settings.edit();
-                    editor.putBoolean(SETTINGS_SHOW_TIP, mShowTip);
-                    editor.commit();
-                }
-            });
-
-            Button cont = (Button) dialog.findViewById(R.id.tip_continue);
-            cont.setOnClickListener(new OnClickListener() {
-
-                @Override
-                public void onClick(View v) {
-                    capturePhoto();
-                }
-            });
-            break;
-        }
-    }
-
-    /**
-     * Stitches together the set of images and presents the result to the user via a Dialog
-     */
-    class StitchPhotoTask extends AsyncTask<Void, Void, Integer> {
-
-        /**
-         * Shows a Progress Dialog to the user
-         * Attempts to close the RESULTS dialog. We just catch the execption if it isn't open
-         * and continue, since we really only care about ensuring that the dialog is closed.
-         */
-        @Override
-        protected void onPreExecute() {
-            try {
-                dismissDialog(DIALOG_RESULTS);
-            } catch (IllegalArgumentException e) {
-                // catch and continue, we just want to make sure the dialog is gone
-            }
-            // Try to free up some memory before stitching
-            System.gc();
-            showDialog(DIALOG_STITCHING);
-        }
-
-        /**
-         * Stitches the images
-         * Passes data to native code via string array
-         */
-        @Override
-        protected Integer doInBackground(Void... v) {
-          return 0;
-        }
-
-        /**
-         * Builds response for user based on stitch status
-         */
-        @Override
-        protected void onPostExecute(Integer ret) {
-            dismissDialog(DIALOG_STITCHING);
-            if (ret == 0) showDialog(DIALOG_SUCCESS);
-            else showDialog(DIALOG_ERROR);
         }
     }
 
@@ -663,7 +341,7 @@ public class PanoActivity extends Activity implements ViewFactory, OnClickListen
         }
 
         /**
-         * Generates tumbnails for past panoramas
+         * Generates thumbnails for past panoramas
          */
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
@@ -671,7 +349,7 @@ public class PanoActivity extends Activity implements ViewFactory, OnClickListen
             Bitmap result = null;
             BitmapFactory.Options options = new BitmapFactory.Options();
             options.inSampleSize = 8;
-            // initialize our new pano image view
+            // initialize the new pano icon
             if (position == 0) {
                 result = BitmapFactory.decodeResource(getResources(), R.drawable.ic_add, options);
             }
@@ -699,15 +377,10 @@ public class PanoActivity extends Activity implements ViewFactory, OnClickListen
             options.inSampleSize = 1;
             if (position == 0) {
                 mShareButton.setVisibility(View.INVISIBLE);
-                mUploadButton.setVisibility(View.INVISIBLE);
-                mRestitchButton.setVisibility(View.INVISIBLE);
                 createNewPano();
             }
             else {
                 mShareButton.setVisibility(View.VISIBLE);
-                mUploadButton.setVisibility(View.VISIBLE);
-                mRestitchButton.setVisibility(View.VISIBLE);
-                mCurrentImage = getDirCount(position-1);
                 File f = getDirImage(position-1);
                 if (f != null) {
                     mSubDir = f.getParentFile().getName() + "/";
@@ -743,52 +416,25 @@ public class PanoActivity extends Activity implements ViewFactory, OnClickListen
         }
     }
 
-    /**
-     * Determines the number of pictures taken for the folder at index
-     * @param index
-     * @return The number of images.
-     */
-    private int getDirCount(int index) {
-        File[] contents = mDirectories.get(index).listFiles();
-        int hasResult = -1;
-        int hasFirst = -1;
-        int size = 0;
-        for (int i = 0; i < contents.length; i++) {
-            if (contents[i].isFile()) {
-                if (contents[i].getName().contains("png")) size++;
-                if (contents[i].getName().equals(mOutputImage)) hasResult = i;
-                else if (contents[i].getName().equals(mImagePrefix + 1 + ".png")) hasFirst = i;
-            }
-        }
-        if ((hasResult < 0) && (hasFirst < 0)) {
-            return 0;
-        }
-
-        if (hasResult >= 0) return (size-1);
-        else return size;
+    private File getDir(int index) {
+        File directory = mDirectories.get(index);
+        return directory;
     }
 
     /**
-     * Returns the file do display in the Gallery view or Image View to user for the given index
+     * Returns the file to display in the Gallery view or Image View to user for the given index
      * @param index
      * @return the File
      */
     private File getDirImage(int index) {
-        File[] contents = mDirectories.get(index).listFiles();
-        int hasResult = -1;
-        int hasFirst = -1;
-        for (int i = 0; i < contents.length; i++) {
-            if (contents[i].isFile()) {
-                if (contents[i].getName().equals(mOutputImage)) hasResult = i;
-                else if (contents[i].getName().equals(mImagePrefix + 1 + ".png")) hasFirst = i;
+        File[] files = mDirectories.get(index).listFiles();
+        for (File f: files) {
+            String filename = f.getName();
+            if (filename.endsWith(mOutputImage)) {
+                  return f;
             }
         }
-        if ((hasResult < 0) && (hasFirst < 0)) {
-            return null;
-        }
-
-        if (hasResult >= 0) return contents[hasResult];
-        else return contents[hasFirst];
+        return null;
     }
 
     /**
@@ -811,37 +457,29 @@ public class PanoActivity extends Activity implements ViewFactory, OnClickListen
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
-        case R.id.main_button_upload:
-            uploadImage(getDirImage(mGalleryImage-1));
-            break;
         case R.id.main_button_share:
-            shareImage(getDirImage(mGalleryImage-1));
-            break;
-        case R.id.main_button_restitch:
-            new StitchPhotoTask().execute();
+            sharePano(getDir(mGalleryImage-1));
             break;
         }
-    }
-
-    /**
-     * Uploads the file f to Picasa
-     * @param f
-     */
-    private void uploadImage(File f) {
-        Intent upload = new Intent(this, PicasaUploadActivity.class);
-        upload.putExtra(PicasaUploadActivity.EXTRA_FILE, f.getAbsolutePath());
-        startActivityForResult(upload, PicasaUploadActivity.INTENT_UPLOAD_IMAGE);
     }
 
     /**
      * Shares the file f through a generic intent
      * @param f
      */
-    private void shareImage(File f) {
-        Intent shareImage = new Intent(android.content.Intent.ACTION_SEND);
-        shareImage.setType(MIME_TYPE);
-        shareImage.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(f));
-        startActivity(Intent.createChooser(shareImage,
+    private void sharePano(File directory) {
+        ArrayList<Uri> uris = new ArrayList<Uri>();
+        File[] files = directory.listFiles();
+        for (File file: files) {
+            Log.i(TAG, "Sharing: " + file);
+            Uri uri = Uri.fromFile(file);
+            uris.add(uri);
+        }
+
+        Intent share = new Intent(android.content.Intent.ACTION_SEND_MULTIPLE);
+        share.setType(MIME_TYPE);
+        share.putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris);
+        startActivity(Intent.createChooser(share,
                 getResources().getString(R.string.intent_share_using)));
     }
 }

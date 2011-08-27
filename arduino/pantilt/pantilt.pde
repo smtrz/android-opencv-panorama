@@ -81,8 +81,7 @@ void init_servos() {
 void setup() {
   Serial.begin(BAUD_RATE);
   Serial.flush();
-  init_servos();
-  Serial.print("\r\nBoard is setup. You can now send a command.");
+  
   pinMode(13, OUTPUT);
 }
  

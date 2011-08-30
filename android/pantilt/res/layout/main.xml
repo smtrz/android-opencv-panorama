@@ -17,6 +17,14 @@
         android:layout_height="wrap_content"
         />
     <Button
+        android:id="@+id/main_button_delete"
+        android:text="@string/button_delete"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        />
+    <Button
         android:id="@+id/main_button_share"
         android:text="@string/button_share"
         android:layout_width="wrap_content"

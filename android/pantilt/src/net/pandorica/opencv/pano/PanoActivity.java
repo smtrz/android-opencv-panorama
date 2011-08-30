@@ -25,7 +25,6 @@ import java.util.List;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.app.ProgressDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.ComponentName;
@@ -79,7 +78,7 @@ public class PanoActivity extends Activity implements ViewFactory, OnClickListen
     // default settings
     private String mDefaultPath;
     private String mDefaultImagePrefix;
-    private String mDefaultOutputName                  = "result.jpg";
+    private String mDefaultOutputName                  = "pano_thumbnail";
 
     // Message types sent from the BluetoothChatService Handler
     public static final int MESSAGE_STATE_CHANGE = 1;
@@ -118,6 +117,7 @@ public class PanoActivity extends Activity implements ViewFactory, OnClickListen
     private List<File> mDirectories;
 
     private Button mShareButton;
+    private Button mDeleteButton;
 
     /**
      * Called when activity is first created.
@@ -149,8 +149,11 @@ public class PanoActivity extends Activity implements ViewFactory, OnClickListen
         gallery.setOnItemClickListener(mPanoAdapter);
 
         mShareButton = (Button) findViewById(R.id.main_button_share);
+        mDeleteButton = (Button) findViewById(R.id.main_button_delete);
         mShareButton.setVisibility(View.INVISIBLE);
+        mDeleteButton.setVisibility(View.INVISIBLE);
         mShareButton.setOnClickListener(this);
+        mDeleteButton.setOnClickListener(this);
 
         // Get local Bluetooth adapter
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -265,6 +268,7 @@ public class PanoActivity extends Activity implements ViewFactory, OnClickListen
 
 
     private void createNewPano() {
+        Log.i(TAG, "in createNewPano");
         if (mChatService.getState() != BluetoothChatService.STATE_CONNECTED) {
             Toast.makeText(this, R.string.not_connected, Toast.LENGTH_SHORT).show();
             // Connect to pan/tilt head
@@ -377,10 +381,12 @@ public class PanoActivity extends Activity implements ViewFactory, OnClickListen
             options.inSampleSize = 1;
             if (position == 0) {
                 mShareButton.setVisibility(View.INVISIBLE);
+                mDeleteButton.setVisibility(View.INVISIBLE);
                 createNewPano();
             }
             else {
                 mShareButton.setVisibility(View.VISIBLE);
+                mDeleteButton.setVisibility(View.VISIBLE);
                 File f = getDirImage(position-1);
                 if (f != null) {
                     mSubDir = f.getParentFile().getName() + "/";
@@ -395,7 +401,7 @@ public class PanoActivity extends Activity implements ViewFactory, OnClickListen
     /**
      * Refreshes the Gallery View
      */
-    private void refreshView() {
+    public void refreshView() {
         updateFolders();
         mPanoAdapter.notifyDataSetChanged();
     }
@@ -430,7 +436,7 @@ public class PanoActivity extends Activity implements ViewFactory, OnClickListen
         File[] files = mDirectories.get(index).listFiles();
         for (File f: files) {
             String filename = f.getName();
-            if (filename.endsWith(mOutputImage)) {
+            if (filename.contains(mOutputImage)) {
                   return f;
             }
         }
@@ -457,6 +463,9 @@ public class PanoActivity extends Activity implements ViewFactory, OnClickListen
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
+        case R.id.main_button_delete:
+            deletePano(getDir(mGalleryImage-1));
+            break;
         case R.id.main_button_share:
             sharePano(getDir(mGalleryImage-1));
             break;
@@ -464,8 +473,24 @@ public class PanoActivity extends Activity implements ViewFactory, OnClickListen
     }
 
     /**
+     * Deletes the pano from the sdcard and refreshes the display
+     * @param directory
+     */
+    private void deletePano(File directory) {
+        File[] files = directory.listFiles();
+        for (File file: files) {
+            file.delete();
+        }
+        directory.delete();
+        mShareButton.setVisibility(View.INVISIBLE);
+        mDeleteButton.setVisibility(View.INVISIBLE);
+        mImageSwitcher.setImageDrawable(null);
+        refreshView();
+    }
+
+    /**
      * Shares the file f through a generic intent
-     * @param f
+     * @param directory
      */
     private void sharePano(File directory) {
         ArrayList<Uri> uris = new ArrayList<Uri>();

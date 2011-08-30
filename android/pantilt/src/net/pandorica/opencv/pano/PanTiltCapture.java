@@ -36,8 +36,9 @@ import android.hardware.Camera;
 import android.hardware.Camera.PreviewCallback;
 import android.os.AsyncTask;
 import android.util.Log;
+import android.widget.Toast;
 
-public class PanTiltCapture extends AsyncTask<Integer, Void, Integer>
+public class PanTiltCapture extends AsyncTask<Integer, String, Integer>
      implements Camera.PictureCallback {
 
     private Object semaphore = new Object();
@@ -57,6 +58,10 @@ public class PanTiltCapture extends AsyncTask<Integer, Void, Integer>
       mBasePath = base_path;
       mImagePrefix = image_prefix;
       mType = type;
+    }
+
+    public void onPreExecute() {
+        Log.i("jpegCallback", "In PreExecute");
     }
 
     protected Integer doInBackground(Integer... unused) {
@@ -101,6 +106,7 @@ public class PanTiltCapture extends AsyncTask<Integer, Void, Integer>
         int max_tilt = 1; // Only do a cylindrical pano for now
         int tilt_increment = 20;
         for (int tilt = 0; tilt < max_tilt; tilt += tilt_increment) {
+            publishProgress("Moving pan/tilt head");
             mCaller.SendMessage("p0\r");
             try { Thread.sleep(2000); } catch (InterruptedException e) { }
             mCaller.SendMessage("t" + tilt + "\r");
@@ -108,6 +114,8 @@ public class PanTiltCapture extends AsyncTask<Integer, Void, Integer>
             mCaller.SendMessage("o\r");
 
             for (int pan = 0; pan < max_pan; pan += pan_increment) {
+                publishProgress("Moving to " + pan + "/" + tilt + " degrees");
+
                 // Start the preview before we move the head so it has a chance
                 // to do AWB and whatnot.
                 boolean success = false;
@@ -154,6 +162,7 @@ public class PanTiltCapture extends AsyncTask<Integer, Void, Integer>
             }
         }
 
+        publishProgress("Resetting to initial position");
         mCaller.SendMessage("p0\r");
         try { Thread.sleep(2000); } catch (InterruptedException e) { }
         mCaller.SendMessage("t0\r");
@@ -162,13 +171,20 @@ public class PanTiltCapture extends AsyncTask<Integer, Void, Integer>
 
         try {
             FileOutputStream out = new FileOutputStream(mBasePath + mPanoSubdirectory +
-                                                        "/" + mPanoSubdirectory + "_result.jpg");
+                                                        "/pano_thumbnail_" + mPanoSubdirectory +
+                                                        ".jpg");
             mThumbnailPano.compress(Bitmap.CompressFormat.JPEG, 60, out);
         } catch (Exception e) {
             // TODO: Do something useful here
         }
         c.release();
+        publishProgress("Panorama successfully completed");
         return 0;
+    }
+
+    protected final void onProgressUpdate(String... message) {
+        Toast.makeText(mCaller.getApplicationContext(),
+                       message[0], Toast.LENGTH_SHORT).show();
     }
 
     private void SetAlpha(Bitmap b, int alpha) {
@@ -262,5 +278,9 @@ public class PanTiltCapture extends AsyncTask<Integer, Void, Integer>
 
     public void SetCaller(PanoActivity caller) {
         mCaller = caller;
+    }
+
+    protected void onPostExecute(Integer unused) {
+        mCaller.refreshView();
     }
 }

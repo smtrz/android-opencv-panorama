@@ -2,10 +2,12 @@
 <resources>
     <string name="app_name">Pan Tilt</string>
     <string name="default_folder">Panorama</string>
-    <string name="default_prefix">pano</string>
+    <string name="default_prefix">pano_image</string>
     <string name="intent_share_using">Upload using:</string>
     <string name="button_share">Upload</string>
+    <string name="button_delete">Delete</string>
     <string name="not_connected">Not connected</string>
+    <string name="dialog_capturing">Capturing panorama</string>
 
     <!--  DeviceListActivity -->
     <string name="scanning">scanning for devices...</string>

@@ -19,6 +19,7 @@ package net.pandorica.opencv.pano;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -349,6 +350,7 @@ public class PanoActivity extends Activity implements ViewFactory, OnClickListen
          */
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
+            Log.d(TAG, "in getView: " + position);
             ImageView panos = new ImageView (mContext);
             Bitmap result = null;
             BitmapFactory.Options options = new BitmapFactory.Options();
@@ -357,7 +359,7 @@ public class PanoActivity extends Activity implements ViewFactory, OnClickListen
             if (position == 0) {
                 result = BitmapFactory.decodeResource(getResources(), R.drawable.ic_add, options);
             }
-            // otherwise initialize the sorted panorama's
+            // otherwise initialize the sorted panoramas
             else {
                 File f = getDirImage(position-1);
                 if (f != null) {
@@ -415,8 +417,10 @@ public class PanoActivity extends Activity implements ViewFactory, OnClickListen
         File[] contents = storage.listFiles();
         mDirectories = new ArrayList<File>();
 
-        for (int i = 0; i < contents.length; i++) {
+        Arrays.sort(contents);
+        for (int i = contents.length - 1; i >= 0; i--) {
             if (contents[i].isDirectory()) {
+                Log.d(TAG, "Scanning directory: " + contents[i].getName());
                 mDirectories.add(contents[i]);
             }
         }

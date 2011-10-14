@@ -324,7 +324,6 @@ JNIEXPORT jint JNICALL Java_net_pandorica_opencv_pano_PanoActivity_Stitch(JNIEnv
         env->ReleaseStringUTFChars(jstr, str);
     }
 
-
     int64 app_start_time = getTickCount();
     cv::setBreakOnError(true);
 
@@ -340,7 +339,7 @@ JNIEXPORT jint JNICALL Java_net_pandorica_opencv_pano_PanoActivity_Stitch(JNIEnv
     if (num_images < 2)
     {
         __android_log_print(ANDROID_LOG_DEBUG, TAG, "Need more images");
-        return -1;
+        return gc_args_ret(argc, argv, -1);
     }
 
     double work_scale = 1, seam_scale = 1, compose_scale = 1;
@@ -366,7 +365,7 @@ JNIEXPORT jint JNICALL Java_net_pandorica_opencv_pano_PanoActivity_Stitch(JNIEnv
         if (full_img.empty())
         {
             __android_log_print(ANDROID_LOG_DEBUG, TAG, "Can't open image %s", img_names[i].c_str());
-            return -1;
+            return gc_args_ret(argc, argv, -1);
         }
         if (work_megapix < 0)
         {
@@ -435,7 +434,7 @@ JNIEXPORT jint JNICALL Java_net_pandorica_opencv_pano_PanoActivity_Stitch(JNIEnv
     if (num_images < 2)
     {
         __android_log_print(ANDROID_LOG_DEBUG, TAG, "Need more images");
-        return -1;
+        return gc_args_ret(argc, argv, -1);
     }
 
     __android_log_print(ANDROID_LOG_DEBUG, TAG, "Estimating rotations...");
@@ -645,7 +644,7 @@ JNIEXPORT jint JNICALL Java_net_pandorica_opencv_pano_PanoActivity_Stitch(JNIEnv
     imwrite(result_name, result);
 
     __android_log_print(ANDROID_LOG_DEBUG, TAG, "Finished, total time: %f sec", ((getTickCount() - app_start_time) / getTickFrequency()));
-    return 0;
+    return gc_args_ret(argc, argv, 0);
 }
 
 }

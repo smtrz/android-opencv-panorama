@@ -1,17 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-      android:versionCode="2"
-      android:versionName="0.98" package="net.pandorica.opencv.pano">
+      android:versionCode="4"
+      android:versionName="0.99"
+      android:installLocation="preferExternal"
+      package="net.pandorica.opencv.pano">
 
     <uses-sdk android:minSdkVersion="8" />
     <uses-permission android:name="android.permission.CAMERA"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.GET_ACCOUNTS" />
-    <uses-permission android:name="android.permission.USE_CREDENTIALS" />
-    <uses-permission android:name="android.permission.MANAGE_ACCOUNTS" />
-    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
-    <uses-permission android:name="android.permission.BLUETOOTH" />
 
     <supports-screens android:resizeable="true"
                       android:smallScreens="true"
@@ -22,8 +19,8 @@
     <application
         android:icon="@drawable/icon"
         android:label="@string/app_name"
-        android:debuggable="false"
         >
+        <!-- android:debuggable="false" -->
         <activity android:name=".PanoActivity"
                   android:label="@string/app_name">
             <intent-filter>
@@ -36,13 +33,9 @@
                 android:label="@string/app_name">
         </activity>
         <activity
-                android:name=".PicasaUploadActivity"
-                android:label="@string/app_name">
+                android:name=".AdvancedMenuActivity"
+                android:label="@string/menu_app_name">
         </activity>
-        <activity android:name=".DeviceListActivity"
-                  android:label="@string/select_device"
-                  android:theme="@android:style/Theme.Dialog"
-                  android:configChanges="orientation|keyboardHidden" />
     </application>
 
 </manifest>

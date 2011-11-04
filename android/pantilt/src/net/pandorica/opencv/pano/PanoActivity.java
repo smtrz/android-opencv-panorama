@@ -263,7 +263,24 @@ public class PanoActivity extends Activity implements ViewFactory, OnClickListen
         if (message.length() > 0) {
             // Get the message bytes and tell the BluetoothChatService to write
             byte[] send = message.getBytes();
+            for (int i=0; i<send.length; i++) {
+                Log.i(TAG, "Writing byte:" + (int) send[i]);
+            }
             mChatService.write(send);
+        }
+    }
+
+    public void SendMessageBytes(byte[] message) {
+        // Check that we're actually connected before trying anything
+        if (mChatService.getState() != BluetoothChatService.STATE_CONNECTED) {
+            // TODO: better error handling here
+            //Toast.makeText(this, R.string.not_connected, Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Check that there's actually something to send
+        if (message.length > 0) {
+            mChatService.write(message);
         }
     }
 

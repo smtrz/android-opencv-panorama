@@ -64,6 +64,33 @@ public class PanTiltCapture extends AsyncTask<Integer, String, Integer>
         Log.i("jpegCallback", "In PreExecute");
     }
 
+    private void setPan(int angle, int pause) {
+      /*
+        mCaller.SendMessage("p" + angle + "\r");
+        try { Thread.sleep(pause); } catch (InterruptedException e) { }
+        mCaller.SendMessage("o\r");
+        */
+
+        byte angle_low = (byte) (angle & 0xFF);
+        byte angle_high = (byte) ((angle & 0xFF00) >> 8);
+        byte[] command = { (byte) 0xFF, (byte) 0x01, angle_high, angle_low };
+        mCaller.SendMessageBytes(command);
+        try { Thread.sleep(pause); } catch (InterruptedException e) { }
+    }
+
+    private void setTilt(int angle, int pause) {
+      /*
+        mCaller.SendMessage("t" + angle + "\r");
+        try { Thread.sleep(pause); } catch (InterruptedException e) { }
+        mCaller.SendMessage("o\r");
+        */
+        byte angle_low = (byte) (angle & 0xFF);
+        byte angle_high = (byte) ((angle & 0xFF00) >> 8);
+        byte[] command = { (byte) 0xFF, (byte) 0x02, angle_high, angle_low };
+        mCaller.SendMessageBytes(command);
+        try { Thread.sleep(pause); } catch (InterruptedException e) { }
+    }
+
     protected Integer doInBackground(Integer... unused) {
         // generate the default folder name
         SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd_HHmmss");
@@ -103,15 +130,13 @@ public class PanTiltCapture extends AsyncTask<Integer, String, Integer>
 
         // TODO: The manual stitching code is pretty much hard coded for a
         // single pass horizontally.  Update it to support tilt.
-        int max_tilt = 1; // Only do a cylindrical pano for now
-        int tilt_increment = 20;
+        int max_tilt = 91;
+        int tilt_increment = 45;
         for (int tilt = 0; tilt < max_tilt; tilt += tilt_increment) {
             publishProgress("Moving pan/tilt head");
-            mCaller.SendMessage("p0\r");
-            try { Thread.sleep(2000); } catch (InterruptedException e) { }
-            mCaller.SendMessage("t" + tilt + "\r");
-            try { Thread.sleep(1000); } catch (InterruptedException e) { }
-            mCaller.SendMessage("o\r");
+
+            setPan(0, 2000);
+            setTilt(tilt, 1000);
 
             for (int pan = 0; pan < max_pan; pan += pan_increment) {
                 publishProgress("Moving to " + pan + "/" + tilt + " degrees");
@@ -128,9 +153,7 @@ public class PanTiltCapture extends AsyncTask<Integer, String, Integer>
                   }
                 }
 
-                mCaller.SendMessage("p" + pan + "\r");
-                try { Thread.sleep(1000); } catch (InterruptedException e) { }
-                mCaller.SendMessage("o" + pan + "\r");
+                setPan(pan, 1000);
 
                 mThumbnailX = (int) Math.round(pano_thumbnail_width * (360 - pan) / 360.0 -
                                                (image_width * mThumbnailScale))  ;
@@ -159,15 +182,21 @@ public class PanTiltCapture extends AsyncTask<Integer, String, Integer>
                 }
                 c.stopPreview();
                 mCurrentImage++;
+
+                // (Doesn't work; servos + board don't have enough travel)
+                // We only want one photo at the zenith
+                //if (tilt == 0) break;
             }
         }
 
         publishProgress("Resetting to initial position");
-        mCaller.SendMessage("p0\r");
-        try { Thread.sleep(2000); } catch (InterruptedException e) { }
-        mCaller.SendMessage("t0\r");
-        try { Thread.sleep(2000); } catch (InterruptedException e) { }
-        mCaller.SendMessage("o\r");
+        setPan(0, 2000);
+        setTilt(0, 2000);
+
+
+        publishProgress("Resetting to initial position");
+        setPan(0, 2000);
+        setTilt(0, 2000);
 
         try {
             FileOutputStream out = new FileOutputStream(mBasePath + mPanoSubdirectory +

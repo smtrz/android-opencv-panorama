@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">OpenCV Pano</string>
+    <string name="menu_app_name">OpenCV Pano Advanced Settings</string>
     <string name="default_folder">Panorama</string>
     <string name="default_prefix">image</string>
     <string name="continue_capturing">Capture Next</string>
@@ -17,7 +18,8 @@
     <string name="button_upload">Upload to Picasa</string>
     <string name="button_restitch">Re-Stitch</string>
     <string name="dialog_error">There was an error in stitching your panorama.</string>
-    <string name="success">Success!</string>
+    <string name="dialog_gallery_context">Options</string>
+    <string name="success">Result:</string>
     <string name="cont">Continue</string>
     <string name="close">Close</string>
     <string name="exit">Exit</string>
@@ -34,12 +36,15 @@
     <string name="title_other_devices">Other devices</string>
     <string name="not_connected">Not connected</string>
 
-    <!--  DeviceListActivity -->
-    <string name="scanning">scanning for devices...</string>
-    <string name="select_device">select a device to connect</string>
-    <string name="none_paired">No devices have been paired</string>
-    <string name="none_found">No devices found</string>
-    <string name="title_paired_devices">Paired Devices</string>
-    <string name="title_other_devices">Other Available Devices</string>
-    <string name="button_scan">Scan for devices</string>
+    <string name="camera_resolution">Camera Resolution</string>
+    <string name="camera_resolution_dialog">Capture Resolution (WxH)</string>
+
+    <string name="gallery_context_delete">Delete</string>
+
+    <string-array name="settings_menu_items">
+        <item>@string/camera_resolution</item>
+    </string-array>
+    <string-array name="gallery_context_items">
+        <item>@string/gallery_context_delete</item>
+    </string-array>
   </resources>

@@ -16,29 +16,27 @@
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         />
-    <Button
-        android:id="@+id/main_button_share"
-        android:text="@string/button_share"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentLeft="true"
+    <LinearLayout
+            android:id="@+id/bottom_menu"
+            android:orientation="horizontal"
+            android:layout_gravity="bottom"
+            android:gravity="center"
+            android:padding="3dp"
+            android:layout_alignParentBottom="true"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content">
+        <Button
+            android:id="@+id/main_button_share"
+            android:text="@string/button_share"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="10dp"
         />
-    <Button
-        android:id="@+id/main_button_upload"
-        android:text="@string/button_upload"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_toRightOf="@id/main_button_share"
+        <Button
+            android:id="@+id/main_button_restitch"
+            android:text="@string/button_restitch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
         />
-    <Button
-        android:id="@+id/main_button_restitch"
-        android:text="@string/button_restitch"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_toRightOf="@id/main_button_upload"
-        android:layout_alignParentRight="true"
-        />
+    ></LinearLayout>
 </RelativeLayout>

@@ -3,14 +3,14 @@
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * You may obtain a copy of the License at 
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
+ * Unless required by applicable law or agreed to in writing, software 
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
+ * See the License for the specific language governing permissions and 
  * limitations under the License.
  */
 
@@ -23,7 +23,10 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.hardware.Camera;
+import android.hardware.Camera.Parameters;
 import android.hardware.Camera.PreviewCallback;
+import android.hardware.Camera.Size;
+import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
@@ -33,8 +36,7 @@ import android.view.View.OnClickListener;
  * Implements the surface view used to be used by the camera.
  * Listens for on screen clicks and takes pictures.
  */
-public abstract class PanoSurfaceBase extends SurfaceView implements SurfaceHolder.Callback,
-       Runnable, OnClickListener {
+public abstract class PanoSurfaceBase extends SurfaceView implements SurfaceHolder.Callback, Runnable, OnClickListener {
     private Camera              mCamera;
     private SurfaceHolder       mHolder;
     private int                 mFrameWidth;
@@ -43,6 +45,7 @@ public abstract class PanoSurfaceBase extends SurfaceView implements SurfaceHold
     private boolean             mThreadRun;
     private boolean             mCapturing;
     private PanoCamera          mPanoClass;
+    private Context             mContext;
 
     /**
      * Constructs local variables. PanoCamera is needed to for take Picture callback
@@ -51,6 +54,7 @@ public abstract class PanoSurfaceBase extends SurfaceView implements SurfaceHold
      */
     public PanoSurfaceBase(Context context, PanoCamera cls) {
         super(context);
+        mContext = context;
         mPanoClass = cls;
         mHolder = getHolder();
         mHolder.addCallback(this);
@@ -146,8 +150,7 @@ public abstract class PanoSurfaceBase extends SurfaceView implements SurfaceHold
             if (bmp != null) {
                 Canvas canvas = mHolder.lockCanvas();
                 if (canvas != null) {
-                    canvas.drawBitmap(bmp, (canvas.getWidth() - getFrameWidth()) / 2,
-                                      (canvas.getHeight() - getFrameHeight()) / 2, null);
+                    canvas.drawBitmap(bmp, (canvas.getWidth() - getFrameWidth()) / 2, (canvas.getHeight() - getFrameHeight()) / 2, null);
                     mHolder.unlockCanvasAndPost(canvas);
                 }
                 bmp.recycle();
@@ -175,6 +178,12 @@ public abstract class PanoSurfaceBase extends SurfaceView implements SurfaceHold
             mCapturing = true;
             mCamera.stopPreview();
             mCamera.setPreviewCallback(null);
+            Parameters params = mCamera.getParameters();
+            Size defaultSize = params.getSupportedPictureSizes().get(0);
+            int[] size = PanoCamera.getCameraSize(mContext, defaultSize.width, defaultSize.height);
+            Log.d("OpenCV_Base", "Size is " + size[0] + "x" + size[1]);
+            params.setPictureSize(size[0], size[1]);
+            mCamera.setParameters(params);
             try {
                 mCamera.setPreviewDisplay(null);
                 mCamera.startPreview();

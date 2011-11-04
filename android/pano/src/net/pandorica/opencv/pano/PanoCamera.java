@@ -3,14 +3,14 @@
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * You may obtain a copy of the License at 
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
+ * Unless required by applicable law or agreed to in writing, software 
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
+ * See the License for the specific language governing permissions and 
  * limitations under the License.
  */
 
@@ -20,7 +20,9 @@ import java.io.File;
 import java.io.FileOutputStream;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -34,8 +36,10 @@ import android.view.WindowManager;
 public class PanoCamera extends Activity {
     public static final String  EXTRA_DIR_PATH        = "dirPath";
     public static final String  EXTRA_FILE_NAME       = "name";
+    public static final String  CAMERA_WIDTH          = "camera_width";
+    public static final String  CAMERA_HEIGHT         = "camera_height";
 
-    public static final int     INTENT_TAKE_PICTURE   = 200;
+    public static final int     INTENT_TAKE_PICTURE   = 0;
 
     private String              mDirPath              = null;
     private String              mFileName             = null;
@@ -57,7 +61,15 @@ public class PanoCamera extends Activity {
             mFileName = extras.getString(PanoCamera.EXTRA_FILE_NAME);
         }
     }
+    public static int[] getCameraSize(Context context, int def_w, int def_h) {
+        SharedPreferences settings = context.
+                getSharedPreferences(PanoActivity.SETTINGS, Context.MODE_PRIVATE);
+        int[] size = new int[2];
 
+        size[0] = settings.getInt(PanoCamera.CAMERA_WIDTH, def_w);
+        size[1] = settings.getInt(PanoCamera.CAMERA_HEIGHT, def_h);
+        return size;
+    }
     /**
      * Writes photo jpeg data to sdcard
      */

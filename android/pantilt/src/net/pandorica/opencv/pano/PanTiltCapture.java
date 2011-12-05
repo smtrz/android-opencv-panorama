@@ -130,9 +130,9 @@ public class PanTiltCapture extends AsyncTask<Integer, String, Integer>
 
         // TODO: The manual stitching code is pretty much hard coded for a
         // single pass horizontally.  Update it to support tilt.
-        int max_tilt = 91;
-        int tilt_increment = 45;
-        for (int tilt = 0; tilt < max_tilt; tilt += tilt_increment) {
+        int max_tilt = 135;
+        int tilt_increment = -45;
+        for (int tilt = max_tilt; tilt >= 0; tilt += tilt_increment) {
             publishProgress("Moving pan/tilt head");
 
             setPan(0, 2000);
@@ -185,7 +185,7 @@ public class PanTiltCapture extends AsyncTask<Integer, String, Integer>
 
                 // (Doesn't work; servos + board don't have enough travel)
                 // We only want one photo at the zenith
-                //if (tilt == 0) break;
+                if (tilt == 0) break;
             }
         }
 
